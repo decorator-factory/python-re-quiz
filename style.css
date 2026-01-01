@@ -1,0 +1,173 @@
+/* #region CSS Reset */
+*, *::before, *::after { box-sizing: border-box; }
+*:not(dialog) { margin: 0 }
+body { line-height: 1.5 }
+img, picture, video, canvas, svg { display: block; max-width: 100%; }
+input, button, textarea, select { font: inherit }
+p, h1, h2, h3, h4, h5, h6 { overflow-wrap: break-word }
+h1, h2, h3, h4, h5, h6 { text-wrap: balance }
+/* #endregion CSS Reset */
+
+
+:root {
+  --mono-bg: #eff3fc;
+  --mono-fg: #11133c;
+
+  --base-mono-font-family:
+      ui-monospace, 'Cascadia Code', 'Source Code Pro',
+      Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  --mono-font-family: var(--base-mono-font-family);
+
+  --default-font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+}
+
+@media (width < 52.00rem) {
+  /* Use narrower monospace font so that code doesn't have to wrap */
+  :root {
+    --mono-font-family:
+        'Ubuntu Mono', 'LXGW WenKai Mono TC', 'Iosevka',
+        var(--base-mono-font-family);
+  }
+}
+
+body {
+  font-family: var(--default-font-family);
+  font-variant-ligatures: none;
+}
+
+h1 {
+  text-align: center;
+
+  margin: 0;
+
+  background: var(--mono-bg);
+  color: #1c318f;
+
+  font-family: var(--mono-font-family);
+  padding-top: calc(clamp(0.1rem, 10vw - 3rem, 0.5rem));
+  margin-bottom: calc(clamp(0rem, 10vw - 3rem, 1rem));
+}
+
+.flow-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5lh;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+
+  .quiz-item {
+    flex-basis: 45rem;
+  }
+}
+
+.progress {
+  color: #848f9a;
+  font-weight: normal;
+}
+
+.quiz-item {
+  --quiz-inline-padding: 0.5rem;
+  padding-inline: var(--quiz-inline-padding);
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 100%;
+
+  details > button {
+    margin-top: 1rem;
+    font-size: 1.5rem;
+  }
+
+  summary {
+    cursor: pointer;
+    font-size: 1.25rem;
+  }
+}
+
+.quiz-item:has(details[open]) .quiz-answers > li {
+  /* When the "Reveal answer" box is revealed */
+
+  margin-block: 0.5rem;
+
+  &[data-is-correct-answer] {
+    --mono-bg: #f0feeb;
+    --mono-fg: #143209;
+    font-weight: bold;
+
+    &::marker {
+      content: "✅" / "correct";
+      color: #209333;
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+  }
+
+  &:not([data-is-correct-answer]) {
+    --mono-bg: #fbe4d8;
+    --mono-fg: #280b04;
+
+    &::marker {
+      content: "❌" / "wrong";
+      color: #a52208;
+      font-size: 1.25rem;
+      font-weight: bold;
+    }
+  }
+}
+
+@media (width >= 52.00rem) {
+  .correct-answer {
+    border-left: 2px solid black;
+    padding-inline-start: 0.5rem;
+    padding-block-start: 0.5rem;
+  }
+}
+
+code {
+  border-radius: 4px;
+
+  background: var(--mono-bg);
+  color: var(--mono-fg);
+
+  padding-inline: 4px;
+  padding-block: 1px;
+  font-family: var(--mono-font-family);
+}
+
+.code-block {
+  line-height: 1.25;
+
+  /* stretch the code block over the entire width on mobile */
+  margin-inline: calc(-1 * var(--quiz-inline-padding, 0px));
+  @media (width >= 52.00rem) {
+    /* avoid wrapping if the screen alows it */
+    margin-inline-end: calc(-1 * var(--quiz-inline-padding, 0px) - 3rem);
+    font-size: 1.125em;
+  }
+  @media (width < 40.00rem) {
+    font-size: 0.875rem;
+    transform-origin: top left;
+  }
+
+  background: var(--mono-bg);
+  color: var(--mono-fg);
+
+  padding: 0.25em;
+  padding-block-end: 0.75em /* make space for scrollbar */;
+  @media (width >= 40.00rem) {
+    padding-block-end: 0.25em;
+  }
+  @media (width >= 52.00rem) {
+    padding: 0.5em;
+  }
+
+  white-space: pre;
+  max-width: calc(100% + var(--quiz-inline-padding, 0px) * 2);
+  overflow: scroll;
+  word-break: break-all;
+  font-family: var(--mono-font-family);
+}
