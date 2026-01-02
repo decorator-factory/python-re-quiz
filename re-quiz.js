@@ -3,17 +3,19 @@
 /** %monospace%, %%%monospace block%%% */
 const quizItems = [
   {
-    id: "warmup",
-    title: "Warm-up",
+    id: "intro",
+    title: "Intro",
     body: `
       <p>
       This is a quiz that demonstrates some complexity, surprising
       behaviour and common mistakes with Python's standard library
-      %re% module.
+      %re% module. Sometimes the gotcha in the question isn't
+      strictly related to regular expressions, but I decided to
+      include those anyway.
       </p>
 
       <p>
-      This quiz assumes that %re% has already been imported.
+      All the code examples assume that %re% has already been imported.
       </p>
 
       %%%
@@ -25,12 +27,12 @@ const quizItems = [
       </p>
     `,
     answers: [
-      "%'banana'%",
-      "!!%<re.Match object; span=(0, 6), match='banana'>%",
-      "%None%",
-      "an exception",
+      [false, "%'banana'%"],
+      [true, "%<re.Match object; span=(0, 6), match='banana'>%"],
+      [false, "%None%"],
+      [false, "an exception"],
     ],
-    correctAnswer: `
+    explanation: `
       <p>
       %re.search%, %re.fullmatch%, and %re.match% all produce %re.Match% objects.
       </p>
@@ -39,10 +41,11 @@ const quizItems = [
 
   {
     id: "match-misnomer",
-    title: "Validation",
+    title: "Validating an email",
     body: String.raw`
       %%%
-      if re.match(r"[a-z]+@[a-z]+\.[a-z]+", "alice@b.com.кц.рф"):
+      email = "alice@b.com.кц.рф"
+      if re.match(r"[a-z]+@[a-z]+\.[a-z]+", email):
           print("valid")
       else:
           print("invalid")
@@ -53,14 +56,14 @@ const quizItems = [
       </p>
     `,
     answers: [
-      "!!%valid%",
-      "%invalid%",
-      "an exception",
+      [true, "%valid%"],
+      [false, "%invalid%"],
+      [false, "an exception"],
     ],
-    correctAnswer: `
+    explanation: `
       <p>
-      %re.match% searches for a pattern at the start of a string, but it does not
-      ensure that the entire string matches the pattern.
+      %re.match% searches for a pattern at the start of a string.
+      It does not ensure that the entire string matches the pattern.
       </p>
 
       %%%
@@ -68,6 +71,182 @@ const quizItems = [
       <re.Match object; span=(0, 11), match='alice@b.com'>
       >>>
       %%%
+
+      <p>
+      If you need to check if an entire string follows a pattern, use %re.fullmatch% instead.
+      Do not use %re.search%/%re.match% in combination with %^% and %$% (<i>foreshadowing</i>).
+      </p>
+    `
+  },
+
+  {
+    id: "r-string",
+    title: "Rrrr",
+    body: `
+      <p>Which of these expressions evaluate to %True%?</p>
+    `,
+    answers: [
+      [true, String.raw`%"banana" == r"banana"%`],
+      [true, String.raw`%type(r"banana") is str%`],
+      [false, String.raw`%"ba\na\na" == r"ba\na\na"%`],
+      [true, String.raw`%bool(re.fullmatch(r"ba\na\na", "ba\na\na"))%`],
+      [true, String.raw`%bool(re.fullmatch("ba\na\na", "ba\na\na"))%`],
+      [false, String.raw`%bool(re.fullmatch(r"\ba\na\na", "\ba\na\na"))%`],
+      [false, String.raw`%bool(re.fullmatch("ba\na\na", r"ba\na\na"))%`],
+      [true, String.raw`%bool(re.search(r"\ba\na\na", "\ba\na\na"))%`],
+      [false, String.raw`%bool(re.search("\ba\na\na", r"\ba\na\na"))%`],
+      [true, String.raw`%bool(re.fullmatch(r"[\b]a\na\na", "\ba\na\na"))%`],
+      [false, String.raw`%"\boom" == r"\boom"%`],
+      [true, String.raw`%"\splash" == r"\splash"%`],
+    ],
+    explanation: String.raw`
+      <ul class="flow">
+        <li>The %r% prefix doesn't produce a special kind of string, it's still an ordinary %str% object.
+          All %r% does is prevent backslash (%\%) from being treated specially.
+          <p>
+          %r"\\_\n"% represents the same value as %"\\\\_\\n"%.
+        </li>
+
+        <li>In some cases, a character produced by a Python escape happens to represent itself
+          when used in a regular expression. For example, both %"\n"% (%"\x0a"%) and %r"\n"% (%"\x5c\x6e"%)
+          are regular expressions that match a newline character.
+          <p>
+          However, that's not always the case. For example, %"\b"% is the "bell character" (%\x08%), while
+          %\b% in regular expressions (for %re% and many other engines) means the end or beginning of a word.
+          <p>
+          ...unless it's used within a range, like %[\b]% or %[a\bc]%, in which case it does represent the
+          bell character.
+        </li>
+
+        <li>Python does not emit an error when an unknown escape sequence (like %\s%) is encountered.
+          Instead, it treats it as the characters %\% and %s%, and emits a %SyntaxWarning%.
+          <p>
+          This is different from JavaScript, where %\s% means just %s% (and does not raise any warnings).
+        </li>
+      </ul>
+    `
+  },
+
+  {
+    id: "digits",
+    title: "Digits",
+    body: String.raw`
+    <p>What number of bytes can this program theoretically report?</p>
+
+    %%%
+    line = input()
+    if re.fullmatch(r"\d{1, 2}", line):
+        print("parsed number:", int(line))
+        encoded = line.encode("utf-8")
+        print("number of bytes:", len(encoded))
+    %%%
+
+    <p>(multiple choice)</p>
+    `,
+    answers: [
+      [false, "0"],
+      [false, "1 or 2"],
+      [false, "3 or 4"],
+      [false, "5, 6, 7, or 8"],
+      [false, "any non-negative number"],
+    ],
+    explanation: `
+      <p>This is a trick question. %{1, 2}% (with a <b>space</b>) is not special, it just means
+        the characters %{%, %1%, "comma", "space", %2%, %}% literally. %{1;2}% and %{1..2}% are
+        also interpreted literally.</p>
+      <p>So if the match succeeds, %int(line)% has to raise an exception.</p>
+      <p>Even worse, %re.VERBOSE% does not change this behaviour.</p>
+    `
+  },
+
+  {
+    id: "digits-for-real",
+    title: "Digits (for real)",
+    body: String.raw`
+    <p>No more fooling around. What number of bytes can this program theoretically report?</p>
+
+    %%%
+    line = input()
+    if re.fullmatch(r"\d{1,2}", line):
+        encoded = line.encode("utf-8")
+        print("number of bytes:", len(encoded))
+    %%%
+
+    <p>(multiple choice)</p>
+    `,
+    answers: [
+      [false, "0"],
+      [true, "1 or 2"],
+      [true, "3 or 4"],
+      [true, "5, 6, 7, or 8"],
+      [false, "any non-negative number"],
+    ],
+    explanation: String.raw`
+      <p>%\d% is not a synonym for %[0-9]%, it can match any decimal Unicode digit, such as
+      %²% or %🯹%. UTF-8 encodes each value using 1 to 4 bytes, so the answer is %{x+y for x in [1,2,3,4] for y in [0,1,2,3,4]}%.</p>
+
+      <p>By the way, a string matching %\d+% does not mean it's valid for %int()%.
+      For instance, %int("²")% and %int("9"*4301)% will fail.</p>
+
+      <p>The converse is also not true: %int("-420")% and %int("6_9")% succeed.</p>
+    `
+  },
+
+    {
+    id: "digit-dotrange",
+    title: "Digit range",
+    body: String.raw`
+    <p>You are clearly tired of this unicode nonsense and decided to correct your regular expression
+    to only accept ASCII digits. </p>
+
+    %%%
+    pattern = re.compile(r"[0..9]+")
+    %%%
+
+    <p>Which strings will it %.fullmatch()%? (multiple choice)</p>
+    `,
+    answers: [
+      [true, "0"],
+      [true, "9"],
+      [true, "900"],
+      [false, "1"],
+      [false, "1234"],
+      [false, "%re.compile% raises exception for invalid range"],
+    ],
+    explanation: `
+      <p>The intended range would be %[0-9]% or %[0123456789]%. %[0..9]%, or %[0.9]%, means "0, dot, or 9".</p>
+      <p>%[quick brown fox jumps over the lazy dog]% is also a valid range, meaning the same as %[ a-z]%.</p>
+    `
+  },
+
+  {
+    id: "finditer-lazy",
+    title: "%finditer%",
+    body: `
+      %%%
+      if re.finditer(r"[0-9]+", "no numbers here"):
+          print("valid")
+      else:
+          print("invalid")
+      %%%
+
+      <p>
+      What's the output of this program?
+      </p>
+    `,
+    answers: [
+      [true, "%valid%"],
+      [false, "%invalid%"],
+      [false, "an exception"],
+    ],
+    explanation: `
+      <p>
+      %re.finditer% returns an iterator of matches, and iterators are typically truthy.
+      </p>
+
+      <p>
+      %mypy% can catch this mistake if you enable the %truthy-bool% diagnostic.
+      </p>
     `
   },
 
@@ -93,12 +272,12 @@ const quizItems = [
       %%%
     `,
     answers: [
-      "error: you can't add %str% and %int%",
-      "error: you're returning an %int%, but the function is annotated as returning %str%",
-      "error/warning: a generic type is missing a type argument",
-      "!!everything is fine",
+      [false, "error: you can't add %str% and %int%"],
+      [false, "error: you're returning an %int%, but the function is annotated as returning %str%"],
+      [false, "error/warning: a generic type is missing a type argument"],
+      [true, "everything is fine"],
     ],
-    correctAnswer: `
+    explanation: `
       <p>
       %re.Match% is a generic class: it accepts a <i>type parameter</i>,
       in this case %re.Match[str]% or %re.Match[bytes]%, to specify
@@ -139,12 +318,12 @@ const quizItems = [
       %%%
     `,
     answers: [
-      "type checking error & %None% is printed",
-      "no type checking errors & empty string is printed",
-      "no type checking errors & exception is raised",
-      "!!no type checking errors & %None% is printed",
+      [false, "type checking error & %None% is printed"],
+      [false, "no type checking errors & empty string is printed"],
+      [false, "no type checking errors & exception is raised"],
+      [true, "no type checking errors & %None% is printed"],
     ],
-    correctAnswer: `
+    explanation: `
       <p>
       <a href="https://github.com/python/typeshed/blob/d1d5fe58664b30a0c2dde3cd5c3dc8091f0f16ae/stdlib/re.pyi#L91">
         %Match[str].re%
@@ -172,7 +351,6 @@ export function init() {
 
   const search = new URLSearchParams(window.location.search)
   let currentIndex = getSavedIndex(search.get("quiz-pos") || "", quizItems);
-  const maxIndex = quizItems.length - 1;
 
   window.addEventListener("popstate", (event) => {
     if (!event.target instanceof Window)
@@ -185,7 +363,7 @@ export function init() {
 
   function selectQuizItem(index, saveToHistory = false) {
     const onPrev = index === 0 ? null : goBack
-    const onNext = index === maxIndex ? null : goNext
+    const onNext = index === quizItems.length - 1 ? null : goNext
     const quizItem = quizItems[index]
 
     if (saveToHistory)
@@ -267,20 +445,17 @@ function buildQuizNode(quizItem, { onNext, onPrev }, progress) {
     answersNode instanceof HTMLUListElement
     || answersNode instanceof HTMLOListElement)
 
-  for (const answer of quizItem.answers) {
+  for (const [isCorrect, answer] of quizItem.answers) {
     const li = document.createElement("li")
-    let text = escapeMonospace(answer)
-    if (text.startsWith("!!")) {
-      text = text.replace(/^!!/, "")
+    if (isCorrect)
       li.dataset.isCorrectAnswer = true
-    }
-    li.innerHTML = text;
+    li.innerHTML = escapeMonospace(answer);
 
     answersNode.appendChild(li)
   }
 
-  const correctAnswerNode = fragment.querySelector("[part=correct-answer]")
-  correctAnswerNode.innerHTML = escapeMonospace(quizItem.correctAnswer)
+  const explanationNode = fragment.querySelector("[part=explanation]")
+  explanationNode.innerHTML = escapeMonospace(quizItem.explanation)
 
   const nextBtn = fragment.querySelector("[part=next-btn]")
   assert(nextBtn instanceof HTMLButtonElement)

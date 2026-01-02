@@ -48,10 +48,8 @@ h1 {
   margin-bottom: calc(clamp(0rem, 10vw - 3rem, 1rem));
 }
 
-.flow-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5lh;
+.flow > * + * {
+  margin-top: 0.5lh;
 }
 
 main {
@@ -61,11 +59,6 @@ main {
   .quiz-item {
     flex-basis: 45rem;
   }
-}
-
-.progress {
-  color: #848f9a;
-  font-weight: normal;
 }
 
 .quiz-item {
@@ -78,7 +71,7 @@ main {
   max-width: 100%;
 
   details > button {
-    margin-top: 1rem;
+    margin-block: 1rem;
     font-size: 1.5rem;
   }
 
@@ -91,11 +84,11 @@ main {
 .quiz-item:has(details[open]) .quiz-answers > li {
   /* When the "Reveal answer" box is revealed */
 
-  margin-block: 0.5rem;
+  padding-inline-start: 1ch;
 
   &[data-is-correct-answer] {
-    --mono-bg: #f0feeb;
-    --mono-fg: #143209;
+    --mono-bg: #e1ecd2;
+    --mono-fg: #194a07;
     font-weight: bold;
 
     &::marker {
@@ -120,11 +113,22 @@ main {
 }
 
 @media (width >= 52.00rem) {
-  .correct-answer {
-    border-left: 2px solid black;
+  .explanation {
+    margin-inline-start: 1px;
+    border-inline-start: 1px solid rgb(0.2 0.2 0.2);
+    border-radius: 4px;
     padding-inline-start: 0.5rem;
     padding-block-start: 0.5rem;
   }
+}
+
+* + p {
+  margin-top: 0.5lh;
+}
+
+.progress {
+  color: #848f9a;
+  font-weight: normal;
 }
 
 code {
