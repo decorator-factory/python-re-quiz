@@ -80,8 +80,8 @@ const quizItems = [
   },
 
   {
-    id: "r-string",
-    title: "Rrrr",
+    id: "r-string-1",
+    title: "Rrrr I",
     body: `
       <p>Which of these expressions evaluate to %True%?</p>
     `,
@@ -89,13 +89,6 @@ const quizItems = [
       [true, String.raw`%"banana" == r"banana"%`],
       [true, String.raw`%type(r"banana") is str%`],
       [false, String.raw`%"ba\na\na" == r"ba\na\na"%`],
-      [true, String.raw`%bool(re.fullmatch(r"ba\na\na", "ba\na\na"))%`],
-      [true, String.raw`%bool(re.fullmatch("ba\na\na", "ba\na\na"))%`],
-      [false, String.raw`%bool(re.fullmatch(r"\ba\na\na", "\ba\na\na"))%`],
-      [false, String.raw`%bool(re.fullmatch("ba\na\na", r"ba\na\na"))%`],
-      [true, String.raw`%bool(re.search(r"\ba\na\na", "\ba\na\na"))%`],
-      [false, String.raw`%bool(re.search("\ba\na\na", r"\ba\na\na"))%`],
-      [true, String.raw`%bool(re.fullmatch(r"[\b]a\na\na", "\ba\na\na"))%`],
       [false, String.raw`%"\boom" == r"\boom"%`],
       [true, String.raw`%"\splash" == r"\splash"%`],
     ],
@@ -107,17 +100,6 @@ const quizItems = [
           %r"\\_\n"% represents the same value as %"\\\\_\\n"%.
         </li>
 
-        <li>In some cases, a character produced by a Python escape happens to represent itself
-          when used in a regular expression. For example, both %"\n"% (%"\x0a"%) and %r"\n"% (%"\x5c\x6e"%)
-          are regular expressions that match a newline character.
-          <p>
-          However, that's not always the case. For example, %"\b"% is the "bell character" (%\x08%), while
-          %\b% in regular expressions (for %re% and many other engines) means the end or beginning of a word.
-          <p>
-          ...unless it's used within a range, like %[\b]% or %[a\bc]%, in which case it does represent the
-          bell character.
-        </li>
-
         <li>Python does not emit an error when an unknown escape sequence (like %\s%) is encountered.
           Instead, it treats it as the characters %\% and %s%, and emits a %SyntaxWarning%.
           <p>
@@ -126,6 +108,55 @@ const quizItems = [
       </ul>
     `
   },
+
+
+  {
+    id: "r-string-2",
+    title: "Rrrr II",
+    body: `
+      <p>Which of these calls produce a match?</p>
+    `,
+    answers: [
+      [true, String.raw`%re.fullmatch("ba\na\na", "ba\na\na")%`],
+      [true, String.raw`%re.fullmatch(r"ba\na\na", "ba\na\na")%`],
+      [false, String.raw`%re.fullmatch("ba\na\na", r"ba\na\na")%`],
+      [false, String.raw`%re.fullmatch(r"ba\na\na", r"ba\na\na")%`],
+      [false, String.raw`%re.fullmatch(r"\ba\na\na", "\ba\na\na")%`],
+      [true, String.raw`%re.search(r"\ba\na\na", "\ba\na\na")%`],
+      [false, String.raw`%re.search("\ba\na\na", r"\ba\na\na")%`],
+      [true, String.raw`%re.fullmatch(r"[\b]a\na\na", "\ba\na\na")%`],
+    ],
+    explanation: String.raw`
+      <p>
+      In some cases, a character produced by a Python escape happens to represent itself
+      when used in a regular expression. For example, both %"\n"% (%"\x0a"%) and %r"\n"% (%"\x5c\x6e"%)
+      are regular expressions that match a newline character, and %"\b"% (%"\x08"%) matches the "bell character".
+      </p>
+      <p>
+      It is unfortunate that these characters are allowed in a regular expression.
+      I would avoid that because it complicates debugging.
+      </p>
+
+      %%%
+      >>> pat = re.compile("\banana")
+      >>> pat
+      re.compile('\x08anana')
+      >>> print(pat.pattern)
+      anana
+      >>>
+      %%%
+
+      <p>
+      However, when properly escaped, %\b% means the end or beginning of a word. So %r"\b"%
+      (aka %"\\b"%) will not match the string %"\b"%.
+      </p>
+      <p>
+      ...unless it's used within a range, like %[\b]% or %[a\bc]%, in which case it does represent the
+      bell character.
+      </p>
+    `
+  },
+
 
   {
     id: "digits",
@@ -192,7 +223,7 @@ const quizItems = [
     `
   },
 
-    {
+  {
     id: "digit-dotrange",
     title: "Digit range",
     body: String.raw`
