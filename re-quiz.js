@@ -80,6 +80,117 @@ const quizItems = [
   },
 
   {
+    id: "dollar-is-evil",
+    title: "Anchors in sand",
+    body: String.raw`
+    <p>
+    What's the output of this program?
+    </p>
+
+    %%%
+    print(re.search("^[a-z]+$", "banana\n"))
+    %%%
+    `,
+    answers: [
+      [false, "%None%"],
+      [true, "%<re.Match object; span=(0, 6), match='banana'>%"],
+      [false, "%<re.Match object; span=(0, 7), match='banana\\n'>%"],
+      [false, "an exception"],
+    ],
+    explanation: String.raw`
+      <p>From the <a href="https://docs.python.org/3.14/library/re.html#index-2">documentation</a>:</p>
+
+      <blockquote cite="docs.python.org/3.14/library/re.html#index-2">
+      %$%
+      <p>
+      Matches the end of the string or just before the newline at the
+      end of the string, and in %MULTILINE% mode also matches before a newline.
+      </blockquote>
+
+      <p>
+      Unless the "just before final newline" behaviour is what you want, or you're using multiline mode,
+      stay away from %$% and use the %\A% (start of string) and %\Z%/%\z% (end of string) anchors.
+      If you do need the "just before final newline" behaviour, leave a comment explaining why.
+      </p>
+
+      <p>
+      This %^...$% thing is littered all over the code in <em>so many</em> Python projects, and it's
+      wrong! Okay, it's slightly wrong. Still, it can lead to bugs when you don't realize that %$% doesn't
+      necessarily mean "end of string", for example when you assume that a string has no whitespace or
+      has a particular length if it matches a regular expression. If you're using regular expressions
+      for validation, this can allow bad values to enter into your system.
+      </p>
+
+      <p>
+      Most of the time the correct solution is to not use any of these anchors
+      and just use the correct function from the %re% module. Instead of doing %re.search("^[a-z]+$")%
+      or %re.search("\A[a-z]+\Z")%, just do %re.fullmatch("[a-z]+")%.
+      </p>
+
+      <p>
+      Note that in JavaScript, %$% does mean just the end of the string. The "%$% means end or just before
+      the final new line" thing was inherited from Perl and is also present in PCRE2.
+      </p>
+
+      <p>
+      Takeaway: read the documentation for what you're using. Don't assume that the same
+      sigil has the same meaning in two different regex engines.
+      </p>
+    `
+  },
+
+  {
+    id: "forwards-range",
+    title: "Forwards",
+    body: String.raw`
+    <p>
+    What's the output of this program?
+    </p>
+
+    %%%
+    print(re.fullmatch("[0123456789-_!#@]+", "<HTML>"))
+    %%%
+    `,
+    answers: [
+      [false, "%None%"],
+      [true, "%<re.Match object; span=(0, 6), match='<HTML>'>%"],
+      [false, "an exception"],
+    ],
+    explanation: String.raw`
+      <p>
+      This sneaky character set includes the %9-_% range.
+      It represents all of these characters: %9:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_%.
+      </p>
+    `
+  },
+
+  {
+    id: "backwards-range",
+    title: "Backwards",
+    body: String.raw`
+    <p>
+    What's the output of this program?
+    </p>
+
+    %%%
+    print(re.search("[z-a]+", "banana"))
+    %%%
+    `,
+    answers: [
+      [false, "%None%"],
+      [false, "%<re.Match object; span=(0, 6), match='banana'>%"],
+      [true, "an exception"],
+    ],
+    explanation: String.raw`
+      %%%
+      PatternError: bad character range z-a at position 1
+      %%%
+
+      <p>Finally. An island of sanity in the land of regular expressions.</p>
+    `
+  },
+
+  {
     id: "r-string-1",
     title: "Rrrr I",
     body: `
@@ -108,7 +219,6 @@ const quizItems = [
       </ul>
     `
   },
-
 
   {
     id: "r-string-2",
@@ -156,7 +266,6 @@ const quizItems = [
       </p>
     `
   },
-
 
   {
     id: "digits",
@@ -277,6 +386,126 @@ const quizItems = [
 
       <p>
       %mypy% can catch this mistake if you enable the %truthy-bool% diagnostic.
+      </p>
+    `
+  },
+
+  {
+    id: "findall-first",
+    title: "First letter of every name",
+    body: `
+    <p>You're using this regular expression to find names in a string:</p>
+    %%%
+    >>> re.findall("[_A-Za-z]+", "AliCe Bob __testing1 Charlie")
+    ['AliCe', 'Bob', '__testing', 'Charlie']
+    %%%
+    <p>However, it's not very robust. You only want to allow only the start of the string
+    to contain a capital letter or a sequence of underscores. What does the following program print?</p>
+
+    %%%
+    print(re.findall("([A-Z]|_+)[a-z]*", "Alice bob __test"))
+    %%%
+    `,
+    answers: [
+      [false, `%[%%<re.Match object; span=(0, 5), match='Alice'>,%% %%<re.Match object; span=(10, 16), match='__test'>%%]%`],
+      [false, "%['Alice', '__test']%"],
+      [true, "%['A', '__']%"],
+      [false, "%[('Alice', 'A'), ('__test', '__')]%"],
+      [false, "%[('A',), ('__',)]%"],
+    ],
+    explanation: `
+      <p>
+      %findall% has a pretty non-uniform interface:
+        <ul class="flow">
+          <li>If the regular expression doesn't have any capture groups, it returns a list of strings,
+          where each string represents an entire match</li>
+          <li>If the regular expression has only one capture group, it returns a list of stirngs,
+          where each string is the content of that group</li>
+          <li>If the regular expression has more than one capture group, it returns a list of
+          tuples with those capture groups. It does not contain the "whole match", also known as
+          "group 0". So %each_tuple[0]% is group 1, %each_tuple[1]% is group 2 and so on.</li>
+        </ul>
+      </p>
+
+      <p>
+      I would personally recommend using %finditer% unless you're really just hacking together
+      a one-time script or playing in the REPL. It uses a more predictable interface producing
+      %re.Match% objects:
+      </p>
+
+      %%%
+      >>> for match in re.finditer("([A-Z]|_+)[a-z]*", "Alice bob __test"):
+      ...     print(match)
+      ...
+      <re.Match object; span=(0, 5), match='Alice'>
+      <re.Match object; span=(10, 16), match='__test'>
+      >>> for match in re.finditer("[_A-Za-z]+", "Alice bob __test"):
+      ...     print(match)
+      ...
+      <re.Match object; span=(0, 5), match='Alice'>
+      <re.Match object; span=(6, 9), match='bob'>
+      <re.Match object; span=(10, 16), match='__test'>
+      >>>
+      %%%
+
+      <p>
+      See also:
+        <a href="https://www.kalzumeus.com/2010/06/17/falsehoods-programmers-believe-about-names/">
+        Falsehoods Programmers Believe About Names</a>. In the real world, names are complicated.
+        Human (or animal) names can be in all caps, can be all lowercase, can include dashes
+        and other characters that are not in %[-_'a-zA-Z0-9]%.
+      </p>
+    `,
+  },
+
+  {
+    id: "greed",
+    title: "Greed",
+    body: String.raw`
+    <p>
+    What's the output of this program?
+    </p>
+
+    %%%
+for m in re.finditer(r"'(.*)'", "the 'foo' is 'bar'"):
+    print(m)
+    %%%
+    `,
+    answers: [
+      [false, "nothing"],
+      [false,
+        `
+          %%%
+          <re.Match object; span=(0, 5), match="'foo'">
+          <re.Match object; span=(8, 13), match="'bar'">
+          %%%
+        `],
+      [true,
+        `
+          %%%
+          <re.Match object; span=(4, 18), match="'foo' is 'bar'">
+          %%%
+        `],
+      [false, "an exception"],
+    ],
+    explanation: String.raw`
+      <p>
+      %*%, %+%, %{m,}%, %{m,n}% are all <em>greedy</em>: if several outcomes are
+      possible, they pick the longest one.
+      </p>
+
+      <p>
+      If this is undesirable, you can use non-greedy quantifiers (%'(.*?)'%),
+      or exclude the separator from the inner part (%'([^']*)'%).
+      </p>
+
+      <p>
+      Read more about greedy and non-greedy quantifiers in the
+        <a href="https://docs.python.org/3.14/library/re.html#index-6">
+        %re% documentation
+        </a>
+      or the <a href="https://www.regular-expressions.info/repeat.html">
+        regular-expressions.info site</a>.
       </p>
     `
   },
@@ -534,7 +763,9 @@ function escapeMonospace(str) {
     .replaceAll("%%", "%")
 }
 
-/** @param {string} str */
+/**
+ * @param {string} str
+ * @returns {string} */
 function escapeHTML(str) {
   // Is there really no better way to do this?
   const p = document.createElement("p")

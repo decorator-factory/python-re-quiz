@@ -68,7 +68,7 @@ main {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-width: 100%;
+  max-width: min(100%, 50rem);
 
   details > button {
     margin-block: 1rem;
@@ -112,11 +112,17 @@ main {
   }
 }
 
+@media (width < 52.00rem) {
+  ul, ol {
+    /* reduce indentation in lists */
+    padding-inline-start: 1rem;
+  }
+}
+
 @media (width >= 52.00rem) {
   .explanation {
-    margin-inline-start: 1px;
-    border-inline-start: 1px solid rgb(0.2 0.2 0.2);
-    border-radius: 4px;
+    margin-inline-start: 0.4ch;
+    border-inline-start: 2px dotted rgb(100 100 100);
     padding-inline-start: 0.5rem;
     padding-block-start: 0.5rem;
   }
@@ -131,14 +137,18 @@ main {
   font-weight: normal;
 }
 
+blockquote {
+  border-inline-start: 2px solid #b1c8ff;
+  border-block: 1px solid #b1c8ff;
+  padding-inline-start: 4px;
+}
+
 code {
   border-radius: 4px;
 
   background: var(--mono-bg);
   color: var(--mono-fg);
 
-  padding-inline: 4px;
-  padding-block: 1px;
   font-family: var(--mono-font-family);
 }
 
@@ -146,32 +156,27 @@ code {
   line-height: 1.25;
 
   /* stretch the code block over the entire width on mobile */
+  margin-block: 2px;
   margin-inline: calc(-1 * var(--quiz-inline-padding, 0px));
   @media (width >= 52.00rem) {
     /* avoid wrapping if the screen alows it */
-    margin-inline-end: calc(-1 * var(--quiz-inline-padding, 0px) - 3rem);
+    margin-inline-end: calc(-1 * var(--quiz-inline-padding, 0px));
     font-size: 1.125em;
   }
   @media (width < 40.00rem) {
     font-size: 0.875rem;
-    transform-origin: top left;
   }
 
   background: var(--mono-bg);
   color: var(--mono-fg);
 
   padding: 0.25em;
-  padding-block-end: 0.75em /* make space for scrollbar */;
-  @media (width >= 40.00rem) {
-    padding-block-end: 0.25em;
-  }
-  @media (width >= 52.00rem) {
-    padding: 0.5em;
+  @media (width < 40.00rem) {
+    padding-block-end: 0.75em /* make space for scrollbar */;
   }
 
   white-space: pre;
-  max-width: calc(100% + var(--quiz-inline-padding, 0px) * 2);
-  overflow: scroll;
+  overflow-x: auto;
   word-break: break-all;
   font-family: var(--mono-font-family);
 }
