@@ -205,6 +205,8 @@ code {
   color: var(--mono-fg);
 
   font-family: var(--mono-font-family);
+
+  white-space: pre-wrap;
 }
 
 .code-block {

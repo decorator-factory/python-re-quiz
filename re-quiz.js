@@ -244,7 +244,7 @@ const quizItems = [
       </p>
       <p>
       It is unfortunate that these characters are allowed in a regular expression.
-      I would avoid that because it complicates debugging.
+      I would avoid using them because they complicate debugging.
       </p>
 
       %%%
@@ -261,8 +261,8 @@ const quizItems = [
       (aka %"\\b"%) will not match the string %"\b"%.
       </p>
       <p>
-      ...unless it's used within a range, like %[\b]% or %[a\bc]%, in which case it does represent the
-      bell character.
+      ...unless it's used within a character set, like %[\b]% or %[a\bc]%,
+      in which case it does represent the bell character.
       </p>
     `
   },
@@ -329,6 +329,94 @@ const quizItems = [
       For instance, %int("²")% and %int("9"*4301)% will fail.</p>
 
       <p>The converse is also not true: %int("-420")% and %int("6_9")% succeed.</p>
+    `
+  },
+
+  {
+    id: "negative-lookbehind",
+    title: "Negative lookbehind",
+    body: String.raw`
+      <p>What's the output of this program?</p>
+
+      %%%
+      print(re.search("(?!<ban)anas", "bananas"))
+      %%%
+
+    `,
+    answers: [
+      [true, "%<re.Match object; span=(3, 7), match='anas'>%"],
+      [false, "%None%"],
+      [false, "an exception"]
+    ],
+    explanation: `
+      <p>
+      The correct syntax for a negative lookbehind would be %(?<!ban)anas%.
+      %(?!<ban)anas% is a negative lookahead for the string %<ban%.
+      It serves no purpose, since %<ban% will never coincide with %anas%.
+      </p>
+    `
+  },
+
+  {
+    id: "verbose-url-fragment",
+    title: "Verbose I",
+    body: String.raw`
+      <p>What's the output of this program?</p>
+
+      %%%
+      pat = re.compile(
+        "http s? :// [-_./0-9a-zA-Z]+ # (?P<fragment>.*)",
+        re.VERBOSE)
+
+      print(pat.search("http://a.com/b/c#id5")))
+      %%%
+
+    `,
+    answers: [
+      [false, "%<re.Match object; span=(0, 20), match='http://a.com/b/c#id5'>%"],
+      [true, "%<re.Match object; span=(0, 16), match='http://a.com/b/c'>%"],
+      [false, "%None%"],
+      [false, "an exception"]
+    ],
+    explanation: `
+      <p>
+      The hash (#) in a verbose pattern idicates an inline comment, so the
+      % (?P<fragment>.*)% part is ignored.
+      </p>
+    `
+  },
+
+  {
+    id: "verbose-range",
+    title: "Verbose II",
+    body: String.raw`
+      <p>What's the output of this program?</p>
+
+      %%%
+      pat = re.compile(r"""
+        [0-9  # digits (numbers)
+        !@$=  # special characters
+        ]
+        +  # one or more
+      """, re.VERBOSE)
+
+      print(pat.search("banana = 5!"))
+      %%%
+
+    `,
+    answers: [
+      [false, "%<re.Match object; span=(0, 6), match='banana'>%"],
+      [true, "%<re.Match object; span=(0, 11), match='banana = 5!'>%"],
+      [false, "%<re.Match object; span=(7, 8), match='='>%"],
+      [false, "%<re.Match object; span=(6, 11), match=' = 5!'>%"],
+      [false, "%<re.Match object; span=(9, 11), match='5!'>%"],
+      [false, "%None%"],
+      [false, "an exception"],
+    ],
+    explanation: `
+      <p>
+      Inside a character set, %#% does not indicate a comment, and spaces aren't ignored.
+      </p>
     `
   },
 
@@ -514,7 +602,7 @@ for m in re.finditer(r"'(.*)'", "the 'foo' is 'bar'"):
 
   {
     id: "typing-match-any",
-    title: "Type Checking I",
+    title: "Typing I",
     body: `
       <p>
       Python now has a variety of static analysis tools called "type checkers"
@@ -561,8 +649,8 @@ for m in re.finditer(r"'(.*)'", "the 'foo' is 'bar'"):
 
   {
     id: "typing-maybe-none",
-    title: "Type Checking II",
-    body: `
+    title: "Typing II",
+    body: String.raw`
       <p>
       What happens here? Assume that we're using %mypy% and %pyright% on their
       strictest settings.
@@ -605,6 +693,66 @@ for m in re.finditer(r"'(.*)'", "the 'foo' is 'bar'"):
       </p>
     `
   },
+
+  {
+    id: "typing-troll",
+    title: "Typing III",
+    body: String.raw`
+      <p>
+      Finally, our team went through the codebase and fixed all the
+      little annoyances, such as using %\d% inapprioriately or using
+      %match% instead of %fullmatch%. We are industry leaders in
+      using the %re% module now. One of our scripts isn't working as expected though.
+      </p>
+
+      %%%
+      import sys
+      from re import *
+
+      def main(x, y, z):
+          assert fullmatch(r"[0-9]+", f"{x}{y}{z}")
+          match [x, y, z]:                                         {
+              case [0, 1, 2]: print("a"),
+              case [3, 4, 5]: print("b"),
+              case [_, _, _]: sys.exit(1)
+                                                                   }
+          print("all good")
+
+      main(4, 2, 0)
+      %%%
+
+      <p>
+      What does this program do? (Hmm... what does this have to do with typing...)
+      </p>
+    `,
+    answers: [
+      [false, "Doesn't print anything, exits with code 1"],
+      [false, "Prints %a%, %all good% and exits with code 0"],
+      [false, "Prints %b%, %all good% and exits with code 0"],
+      [true, "Prints %all good% and exits with code 0"],
+      [false, "The assertion fails"],
+      [false, "Raises an exception (other than %SystemExit%/%AssertionError%)"],
+      [false, "This is invalid syntax"],
+    ],
+    explanation: `
+      <p>
+      I hope you found the braces by now 😼
+      </p>
+
+      <p>
+      If you inline the suspicious statement, it looks like this:
+      %match[x, y, z]: { case[0, 1, 2]: print("a"), case[3, 4, 5]: print("b), case[_, _, _]: sys.exit(1) }%.
+      Formally, it is an
+        <a href="https://docs.python.org/3.14/reference/simple_stmts.html#annotated-assignment-statements">
+          "annotated assignment statement"
+        </a>,
+      similar to %x: int% without an expression on the right hand side of the %=%. The annotation in this case is a %dict%
+      literal. Variable annotations inside a function body are never evaluated, so minor inconveniences such as
+      the %case% and %_% names being undefined, %sys.exit% raising an exception, or %match% not being subscriptable
+      are irrelevant. However, the %match% name does need to be present, hence the weird star-import from %re%.
+      </p>
+    `
+  }
 ]
 
 export function init() {
@@ -652,6 +800,7 @@ export function init() {
   })
 
   function selectQuizItem(index, saveToHistory = false) {
+    currentIndex = index
     const onPrev = index === 0 ? null : goBack
     const onNext = index === quizItems.length - 1 ? null : goNext
     const quizItem = quizItems[index]
@@ -669,13 +818,13 @@ export function init() {
   }
 
   function goNext() {
-    currentIndex++
-    selectQuizItem(currentIndex, true)
+    assert(currentIndex < quizItems.length - 1, () => `currentIndex=${currentIndex}`)
+    selectQuizItem(currentIndex + 1, true)
   }
 
   function goBack() {
-    currentIndex--
-    selectQuizItem(currentIndex, true)
+    assert(currentIndex > 0, () => `currentIndex=${currentIndex}`)
+    selectQuizItem(currentIndex - 1, true)
   }
 
   selectQuizItem(currentIndex, true)
