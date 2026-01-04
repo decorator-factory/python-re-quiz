@@ -606,18 +606,46 @@ for m in re.finditer(r"'(.*)'", "the 'foo' is 'bar'"):
 ]
 
 export function init() {
-  const placeNode = document.getElementById("quiz-place")
-  assert(placeNode instanceof HTMLElement)
+  // Initialize list
+  const quizSelectorNode = document.getElementById("quiz-selector")
+  assert(quizSelectorNode)
+  let index = 0
+  for (const item of quizItems) {
+    const li = document.createElement("li")
+    const link = document.createElement("a")
+    link.href = urlForQuizItem(index, item.id)  // for e.g. "open in new tab"
+    link.innerHTML = escapeMonospace(item.title)
+
+    let i = index  // closure gotcha: make sure event handler has the right index
+    link.addEventListener("click", (e) => {
+      selectQuizItem(i, true)
+      e.preventDefault()
+    })
+
+    li.appendChild(link)
+    quizSelectorNode.appendChild(li)
+    index += 1
+  }
+
+  // Initialize the main content
+  const quizPlaceNode = document.getElementById("quiz-place")
+  assert(quizPlaceNode)
+
+  const quizSelectorDetails = document.getElementById("quiz-selector-details")
+  assert(quizSelectorDetails instanceof HTMLDetailsElement)
+  if (window.matchMedia("(width >= 60.00rem)").matches) {
+    quizSelectorDetails.open = true
+  }
 
   const search = new URLSearchParams(window.location.search)
-  let currentIndex = getSavedIndex(search.get("quiz-pos") || "", quizItems);
+  let currentIndex = getSavedIndex(search.get("quiz-pos") || "", quizItems)
 
   window.addEventListener("popstate", (event) => {
+    // When pressing back/forward without reloading the page, select the correct quiz item
     if (!event.target instanceof Window)
       return
-
     const search = new URLSearchParams(event.target.location.search)
-    currentIndex = getSavedIndex(search.get("quiz-pos") || "", quizItems);
+    currentIndex = getSavedIndex(search.get("quiz-pos") || "", quizItems)
     selectQuizItem(currentIndex)
   })
 
@@ -625,6 +653,7 @@ export function init() {
     const onPrev = index === 0 ? null : goBack
     const onNext = index === quizItems.length - 1 ? null : goNext
     const quizItem = quizItems[index]
+    assert(quizItem, () => `missing at index ${index}`)
 
     if (saveToHistory)
       saveIndex(index, quizItem.id)
@@ -633,28 +662,33 @@ export function init() {
       quizItem,
       { onPrev, onNext },
       { current: index + 1, max: quizItems.length })
-    placeNode.innerHTML = ""
-    placeNode.appendChild(frag)
+    quizPlaceNode.innerHTML = ""
+    quizPlaceNode.appendChild(frag)
   }
 
   function goNext() {
-    currentIndex++;
+    currentIndex++
     selectQuizItem(currentIndex, true)
   }
 
   function goBack() {
-    currentIndex--;
+    currentIndex--
     selectQuizItem(currentIndex, true)
   }
 
   selectQuizItem(currentIndex, true)
 }
 
+
 /** Change the URL to reflect the given quiz item being selected */
 function saveIndex(index, id) {
+  history.pushState(null, "", urlForQuizItem(index, id))
+}
+
+function urlForQuizItem(index, id) {
   const url = new URL(window.location)
   url.searchParams.set("quiz-pos", `${index}_${id}`)
-  history.pushState(null, "", url)
+  return url
 }
 
 /** Decide which index a query string value refers to.
@@ -709,7 +743,7 @@ function buildQuizNode(quizItem, { onNext, onPrev }, progress) {
     const li = document.createElement("li")
     if (isCorrect)
       li.dataset.isCorrectAnswer = true
-    li.innerHTML = escapeMonospace(answer);
+    li.innerHTML = escapeMonospace(answer)
 
     answersNode.appendChild(li)
   }
@@ -737,20 +771,20 @@ function buildQuizNode(quizItem, { onNext, onPrev }, progress) {
  * @param {string} s
  * @returns {string} */
 function dedent(s) {
-  s = s.replaceAll(/^\n*/g, "").replaceAll(/\s*$/g, "");
+  s = s.replaceAll(/^\n*/g, "").replaceAll(/\s*$/g, "")
   const lines = s.split("\n")
-  const firstLine = lines[0] || "";
-  const trimAmount = /^[ ]*/g.exec(firstLine)[0].length;
+  const firstLine = lines[0] || ""
+  const trimAmount = /^[ ]*/g.exec(firstLine)[0].length
   const trimRegexp = new RegExp("^[ ]{0," + trimAmount + "}", "g")
   return lines.map(line => line.replaceAll(trimRegexp, "")).join("\n")
 }
 
 /**
  * @param {unknown} condition
- * @param {string} msg?
+ * @param {string} message?
  * @returns {asserts condition} */
-function assert(condition, msg = "") {
-  if (!condition) throw new Error(msg)
+function assert(condition, message = () => "Assertion error") {
+  if (!condition) throw new Error(message())
 }
 
 /**

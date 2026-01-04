@@ -2,42 +2,51 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Fair and balanced `re` quiz</title>
-<link rel="modulepreload" href="./re-quiz.js">
-<link rel="stylesheet" href="./style.css">
-<link rel="shortcut icon" href="favicon.svg" type="text/svg">
+  <title>Fair and balanced `re` quiz</title>
+  <link rel="modulepreload" href="./re-quiz.js">
+  <link rel="stylesheet" href="./style.css">
+  <link rel="shortcut icon" href="favicon.svg" type="text/svg">
 </head>
 
 <body>
-<h1>a Python re quiz</h1>
-<main id="quiz-place"></main>
+  <h1>a Python re quiz</h1>
 
-<template id="quiz-item-template">
-  <div class="quiz-item" part="main">
-    <h2>
-      <a href="#" class="progress" part="progress"></a>
-      <span part="title"></span>
-    </h2>
-
-    <div class="quiz-text flow" part="text"></div>
-    <ol type="A" class="quiz-answers" part="answers"></ol>
-
-    <details>
-      <summary>Reveal answer</summary>
-      <div class="explanation flow" part="explanation"></div>
-
-      <button part="next-btn">Next</button>
-    </details>
+  <div class="layout">
+    <nav>
+      <details id="quiz-selector-details">
+        <summary>Select quiz item</summary>
+        <ol id="quiz-selector"></ol>
+      </details>
+    </nav>
+    <main id="quiz-place"></main>
   </div>
-</template>
 
-<script type="module">
-  import * as quiz from "./re-quiz.js"
-  quiz.init()
-</script>
+  <template id="quiz-item-template">
+    <div class="quiz-item" part="main">
+      <h2>
+        <a href="#" class="progress" part="progress"></a>
+        <span part="title"></span>
+      </h2>
+
+      <div class="quiz-text flow" part="text"></div>
+      <ol type="A" class="quiz-answers" part="answers"></ol>
+
+      <details>
+        <summary>Reveal answer</summary>
+        <div class="explanation flow" part="explanation"></div>
+
+        <button part="next-btn">Next</button>
+      </details>
+    </div>
+  </template>
+
+  <script type="module">
+    import * as quiz from "./re-quiz.js"
+    quiz.init()
+  </script>
 </body>
 
 </html>
