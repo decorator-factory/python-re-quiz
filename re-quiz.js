@@ -434,12 +434,14 @@ const quizItems = [
       </p>
 
       %%%
-      >>> for match in re.finditer("([A-Z]|_+)[a-z]*", "Alice bob __test"):
+      >>> for match in re.finditer("([A-Z]|_+)[a-z]*",
+      ...                          "Alice bob __test"):
       ...     print(match)
       ...
       <re.Match object; span=(0, 5), match='Alice'>
       <re.Match object; span=(10, 16), match='__test'>
-      >>> for match in re.finditer("[_A-Za-z]+", "Alice bob __test"):
+      >>> for match in re.finditer("[_A-Za-z]+",
+      ...                          "Alice bob __test"):
       ...     print(match)
       ...
       <re.Match object; span=(0, 5), match='Alice'>
@@ -633,7 +635,7 @@ export function init() {
 
   const quizSelectorDetails = document.getElementById("quiz-selector-details")
   assert(quizSelectorDetails instanceof HTMLDetailsElement)
-  if (window.matchMedia("(width >= 60.00rem)").matches) {
+  if (window.matchMedia("(width >= 52.00rem)").matches) {
     quizSelectorDetails.open = true
   }
 
