@@ -32,4 +32,5 @@ Regular expressions require an unusual amount of diligence per line of code. I s
 
 - Make back/forward less janky
 
-- Can we get rid of all the JavaScript?
+- Make this into a more interactive quiz (allow selecting answers, show score at the end, like https://fstrings.wtf/)
+
