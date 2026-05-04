@@ -323,10 +323,10 @@ const quizItems = [
     ],
     explanation: String.raw`
       <p>%\d% is not a synonym for %[0-9]%, it can match any decimal Unicode digit, such as
-      %²% or %🯹%. UTF-8 encodes each value using 1 to 4 bytes, so the answer is %{x+y for x in [1,2,3,4] for y in [0,1,2,3,4]}%.</p>
+      %૨% or %🯹%. UTF-8 encodes each value using 1 to 4 bytes, so the answer is %{x+y for x in [1,2,3,4] for y in [0,1,2,3,4]}%.</p>
 
       <p>By the way, a string matching %\d+% does not mean it's valid for %int()%.
-      For instance, %int("²")% and %int("9"*4301)% will fail.</p>
+      For instance, %int("9"*4301)% will fail.</p>
 
       <p>The converse is also not true: %int("-420")% and %int("6_9")% succeed.</p>
     `
