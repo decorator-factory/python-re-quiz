@@ -368,7 +368,7 @@ const quizItems = [
         "http s? :// [-_./0-9a-zA-Z]+ # (?P<fragment>.*)",
         re.VERBOSE)
 
-      print(pat.search("http://a.com/b/c#id5")))
+      print(pat.search("http://a.com/b/c#id5"))
       %%%
 
     `,
