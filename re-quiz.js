@@ -34,7 +34,7 @@ const quizItems = [
     ],
     explanation: `
       <p>
-      %re.search%, %re.fullmatch%, and %re.match% all produce %re.Match% objects.
+      %re.search%, %re.fullmatch%, and %re.prefixmatch% all produce %re.Match% objects.
       </p>
     `
   },
@@ -75,6 +75,19 @@ const quizItems = [
       <p>
       If you need to check if an entire string follows a pattern, use %re.fullmatch% instead.
       Do not use %re.search%/%re.match% in combination with %^% and %$% (<i>foreshadowing</i>).
+      </p>
+
+      <p>
+      Since Python 3.15, %re.match% is <i>soft deprecated</i> (see
+      <a href="https://docs.python.org/3.15/library/re.html#prefixmatch-vs-match">
+      "prefixmatch() vs. match()"</a> in the docs) due to its unfortunate naming.
+      If you do actually want the above behaviour, use %re.prefixmatch% instead:
+
+      %%%
+      >>> re.prefixmatch(">+ ", ">>> import re")
+      <re.Match object; span=(0, 4), match='>>> '>
+      >>>
+      %%%
       </p>
     `
   },
